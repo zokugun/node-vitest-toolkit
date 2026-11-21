@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][keepachangelog], and this project adheres to [Semantic Versioning][semver].
 
+[Unreleased]
+------------
+
+### Breaking
+
+- rename `buildCliFileTests` function as `defineTestsWithInMemoryFiles`
+
+### Added
+
+- the functions:
+   - `defineGroupedTests`
+   - `defineTestsWithCommand`
+   - `defineTestsWithExec`
+   - `defineTestsWithFiles`
+   - `defineTestsWithResult`
+   - `defineTestsWithValue`
+- the matchers for `Result` and `ExecResult`
+- the mock utilities for `memfs` and `stdin`
+
 [v0.1.0] | 2026-11-17
 ---------------------
 

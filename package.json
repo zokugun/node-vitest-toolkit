@@ -29,7 +29,7 @@
 		"build:package": "tsc-leda update-package && npm run lint:package",
 		"ci:lint": "zizmor .",
 		"ci:lint:fix": "zizmor . --fix=all",
-		"clean": "rimraf .src; rimraf lib",
+		"clean": "rimraf .src lib",
 		"compile:src": "tsc -p src",
 		"lint": "eslint",
 		"lint:all": "npm run lint:package && npm run ci:lint",
@@ -45,11 +45,13 @@
 		"watch:src": "tsc-watch -p src"
 	},
 	"dependencies": {
-		"@zokugun/fs-extra-plus": "0.7.0",
+		"@zokugun/fs-extra-plus": "0.8.1",
 		"@zokugun/is-it-type": "0.8.1",
+		"@zokugun/namegen-lite": "0.1.0",
 		"@zokugun/xtry": "0.12.2",
 		"memfs": "4.68.1",
-		"universalify": "2.0.1"
+		"universalify": "2.0.1",
+		"yaml": "2.9.1"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "20.5.3",
@@ -65,6 +67,7 @@
 		"@zokugun/eslint-config-nodejs": "0.2.0",
 		"@zokugun/eslint-config-style": "0.3.1",
 		"@zokugun/eslint-config-ts": "0.3.2",
+		"@zokugun/exec-lite": "0.4.1",
 		"@zokugun/tsc-leda": "0.9.5",
 		"eslint": "10.13.0",
 		"fixpack": "4.0.0",
@@ -95,7 +98,9 @@
 			"katex": "0.18.2"
 		}
 	},
-	"allowScripts": {},
+	"allowScripts": {
+		"fsevents": true
+	},
 	"keywords": [
 		"fixture",
 		"vitest"
