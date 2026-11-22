@@ -35,12 +35,33 @@ Requirements
 Quick Start
 -----------
 
+Create a YAML fixture in `test/fixtures/uppercase.yml`:
+
+```yaml
+input: hello
+expected: HELLO
+```
+
+Then define a test for each fixture:
+
+```typescript
+import { expect } from 'vitest';
+import { defineTestsWithValue } from '@zokugun/vitest-toolkit';
+
+await defineTestsWithValue(
+   ({ input }) => String(input).toUpperCase(),
+   (value, { expected }) => expect(value).toBe(expected),
+);
+```
+
 API Reference
 -------------
 
-### Functions
+### Define Tests
 
 The fixture-based test helpers read YAML files from `test/fixtures/`. Use `fixture` to select a subdirectory. The shared `FixtureOptions` shown below represents the fixture selection, timeout, and validation options accepted by these helpers.
+
+Set `DEBUG=1` in your environment to log state before/after the action runs.
 
 #### defineGroupedTests
 
@@ -59,54 +80,6 @@ function defineGroupedTests<Manifest extends Record<string, unknown>>(
 
 By default, the group name is the fixture filename without its first extension, and each test name comes from `manifest.name`.
 
-#### defineTestsWithValue
-
-Runs an action for each fixture and passes its result and manifest to a test callback.
-
-```typescript
-function defineTestsWithValue<Manifest extends Record<string, unknown>, Value>(
-  action: (manifest: Manifest) => MaybePromise<Value>,
-  assert: (value: Value, manifest: Manifest) => MaybePromise<void>,
-  options?: FixtureOptions
-): Promise<void>;
-```
-
-#### defineTestsWithResult
-
-Tests an action that returns a `Result`. A fixture with a top-level `error` string is expected to fail; otherwise, `assertSuccess` checks the successful value. Use `assertFailure` to customize failure assertions.
-
-```typescript
-function defineTestsWithResult<Manifest extends Record<string, unknown>, Value>(
-  action: (manifest: Manifest) => MaybePromise<Result<Value, unknown>>,
-  assertSuccess: (value: Value, manifest: Manifest) => MaybePromise<void>,
-  options?: FixtureOptions & {
-    assertFailure?: (error: unknown, manifest: Manifest) => MaybePromise<void>;
-  }
-): Promise<void>;
-```
-
-#### defineTestsWithFiles
-
-Runs an action in a temporary working directory and checks expected files after it completes. Fixture keys use `/input/<path>` for input files and `/output/<path>` for expected output files. An output value can be `{ error: "..." }` to assert that the file is missing with that error.
-
-```typescript
-function defineTestsWithFiles(
-  action: (manifest: Record<string, unknown>, root: string) => MaybePromise<void>,
-  options?: FileFixtureOptions
-): Promise<void>;
-```
-
-#### defineTestsWithExec
-
-Runs an action in a temporary working directory and verifies its `ExecResult`. A fixture's top-level `error` string checks for a failed result and matching fatal output; `output` checks stdout; otherwise success and expected output files are checked.
-
-```typescript
-function defineTestsWithExec(
-  action: (manifest: Record<string, unknown>, root: string) => MaybePromise<ExecResult | undefined>,
-  options?: FileFixtureOptions & { stripAnsi?: boolean }
-): Promise<void>;
-```
-
 #### defineTestsWithCommand
 
 Runs a command for each fixture using `defineTestsWithExec`. The command receives the optional `name` followed by any string arguments in `manifest.args`, runs in the fixture's temporary directory, and gets stdin from `manifest.input`.
@@ -122,22 +95,26 @@ function defineTestsWithCommand(
 
 `Command` and `CommandOptions` are provided by `@zokugun/exec-lite`. The file fixture options extend these common fixture options:
 
-```typescript
-type FixtureOptions = {
-  fixture?: string;
-  timeout?: number;
-  validate?: (name: string, manifest: Record<string, unknown>) => boolean;
-};
+#### defineTestsWithExec
 
-type FileFixtureOptions = FixtureOptions & {
-  input?: string;
-  output?: string;
-  transformFile?: (
-    type: 'additional' | 'input' | 'output',
-    path: string,
-    content: string
-  ) => string;
-};
+Runs an action in a temporary working directory and verifies its `ExecResult`. A fixture's top-level `error` string checks for a failed result and matching fatal output; `output` checks stdout; otherwise success and expected output files are checked.
+
+```typescript
+function defineTestsWithExec(
+  action: (manifest: Record<string, unknown>, root: string) => MaybePromise<ExecResult | undefined>,
+  options?: FileFixtureOptions & { stripAnsi?: boolean }
+): Promise<void>;
+```
+
+#### defineTestsWithFiles
+
+Runs an action in a temporary working directory and checks expected files after it completes. Fixture keys use `/input/<path>` for input files and `/output/<path>` for expected output files. An output value can be `{ error: "..." }` to assert that the file is missing with that error.
+
+```typescript
+function defineTestsWithFiles(
+  action: (manifest: Record<string, unknown>, root: string) => MaybePromise<void>,
+  options?: FileFixtureOptions
+): Promise<void>;
 ```
 
 #### defineTestsWithInMemoryFiles
@@ -150,18 +127,6 @@ function defineTestsWithInMemoryFiles(
   options?: FixtureOptions & FileFixtureOptions & { additionals?: string[] }
 ): Promise<void>;
 ```
-
-**Options:**
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `fixture` | `string` | `''` | Fixture directory name under `test/fixtures/` |
-| `timeout` | `number` | — | Vitest test timeout |
-| `validate` | `(name, manifest) => boolean` | `() => true` | Select fixtures to run |
-| `input` | `string` | `'input'` | Key prefix for input files in YAML |
-| `output` | `string` | `'output'` | Key prefix for expected output files in YAML |
-| `additionals` | `string[]` | `[]` | Extra key prefixes to treat as input files |
-| `transformFile` | `(type, path, content) => string` | identity | Transform file content before loading into the mock FS |
 
 **YAML manifest format:**
 
@@ -176,9 +141,88 @@ Input files are loaded into the in-memory filesystem at `/working/<path>`. Outpu
 
 If the manifest contains a top-level `error` string, the test expects `action(manifest)` to reject with that message. Otherwise it checks output files exist and match expected content.
 
-Set `DEBUG=1` or `DEBUG=vol` in your environment to log filesystem state before/after the action runs.
+Set `DEBUG=vol` in your environment to log filesystem state before/after the action runs.
 
----
+#### defineTestsWithResult
+
+Tests an action that returns a `Result`. A fixture with a top-level `error` string is expected to fail; otherwise, `assertSuccess` checks the successful value. Use `assertFailure` to customize failure assertions.
+
+```typescript
+function defineTestsWithResult<Manifest extends Record<string, unknown>, Value>(
+  action: (manifest: Manifest) => MaybePromise<Result<Value, unknown>>,
+  assertSuccess: (value: Value, manifest: Manifest) => MaybePromise<void>,
+  options?: FixtureOptions & {
+    assertFailure?: (error: unknown, manifest: Manifest) => MaybePromise<void>;
+  }
+): Promise<void>;
+```
+
+#### defineTestsWithValue
+
+Runs an action for each fixture and passes its result and manifest to a test callback.
+
+```typescript
+function defineTestsWithValue<Manifest extends Record<string, unknown>, Value>(
+  action: (manifest: Manifest) => MaybePromise<Value>,
+  assert: (value: Value, manifest: Manifest) => MaybePromise<void>,
+  options?: FixtureOptions
+): Promise<void>;
+```
+
+#### Options
+
+```typescript
+type FixtureOptions = {
+  fixture?: string;
+  timeout?: number;
+  validate?: (name: string, manifest: Record<string, unknown>) => boolean;
+};
+
+type FileFixtureOptions = FixtureOptions & {
+  input?: string;
+  output?: string;
+  transformFile?: (type: 'additional' | 'input' | 'output', path: string, content: string) => string;
+};
+```
+
+| Property        | Type                              | Default      | Description                                            |
+| --------------- | --------------------------------- | ------------ | ------------------------------------------------------ |
+| `additionals`   | `string[]`                        | `[]`         | Extra key prefixes to treat as input files             |
+| `fixture`       | `string`                          | `''`         | Fixture directory name under `test/fixtures/`          |
+| `input`         | `string`                          | `'input'`    | Key prefix for input files in YAML                     |
+| `output`        | `string`                          | `'output'`   | Key prefix for expected output files in YAML           |
+| `timeout`       | `number`                          | —            | Vitest test timeout                                    |
+| `transformFile` | `(type, path, content) => string` | identity     | Transform file content before loading into the mock FS |
+| `validate`      | `(name, manifest) => boolean`     | `() => true` | Select fixtures to run                                 |
+
+### Functions
+
+#### createStdinStream / expandKeyTokens
+
+`createStdinStream()` creates a readable stdin stream from a string or an array of strings. It returns `undefined` when given an unsupported value or an empty string. The optional `delayMs` argument (default `100`) sets the delay between emitted strings.
+
+```typescript
+function createStdinStream(input: unknown, delayMs?: number): Readable | undefined;
+function expandKeyTokens(input: string): string;
+```
+
+`expandKeyTokens()` converts `<up>`, `<down>`, `<enter>`, and `<escape>` tokens to their terminal key sequences. `createStdinStream()` applies this conversion to its input strings.
+
+#### makeTempDir / withTemp
+
+`makeTempDir()` creates and returns a temporary directory path.<br />
+`withTemp()` runs an asynchronous callback in a temporary directory and removes it afterward, even if the callback fails.
+
+```typescript
+function makeTempDir(): Promise<string>;
+function withTemp(run: (root: string) => Promise<void>): Promise<void>;
+```
+
+```typescript
+await withTemp(async (root) => {
+  // process.cwd() is root
+});
+```
 
 #### mockForInMemoryFiles / unmockForInMemoryFiles
 
@@ -198,45 +242,72 @@ Call `mockForInMemoryFiles()` before your test suite and `unmockForInMemoryFiles
 
 **Caveat:** These use `vi.doMock` / `vi.doUnmock`, which only affect modules loaded *after* the mock is set. If a module was already imported before calling `mockForInMemoryFiles()`, it won't be affected. Call these at the top of your test file or in `beforeEach`.
 
----
+#### respondToInteractiveProcess
 
-#### makeTempDir / withTemp
-
-`makeTempDir()` creates and returns a temporary directory path.<br />
-`withTemp()` runs an asynchronous callback in a temporary directory and removes it afterward, even if the callback fails.
+Sends input to a running process when its output matches each interaction in order. Each `on` entry is matched as a substring of the corresponding recent output line; `send` is written to stdin and supports the key tokens above. After the final interaction, stdin is ended.
 
 ```typescript
-function makeTempDir(): Promise<string>;
-function withTemp(run: (root: string) => Promise<void>): Promise<void>;
+type InteractiveTask = {
+  process?: {
+    stdin?: NodeJS.WritableStream | null;
+    stdout?: NodeJS.ReadableStream | null;
+  };
+};
+
+function respondToInteractiveProcess(
+  task: InteractiveTask,
+  interactions: readonly { on: readonly string[]; send: string }[],
+  options: { stripAnsi?: boolean; timeout?: number }
+): void;
 ```
+
+`stripAnsi` removes terminal control characters from output before matching (default `false`).<br />
+`timeout` is the delay in milliseconds after each response (default `100`).
+
+For example, respond to a CLI prompt and then check its output:
 
 ```typescript
-await withTemp(async (root) => {
-  // process.cwd() is root
-});
+import { exec } from '@zokugun/exec-lite';
+import { expect } from 'vitest';
+import { respondToInteractiveProcess } from '@zokugun/vitest-toolkit';
+
+const task = exec('node', [
+  '-e',
+  'process.stdout.write("Name? "); process.stdin.once("data", (name) => console.log("Hello, " + name.toString().trim() + "!"));',
+]);
+
+respondToInteractiveProcess(task, [{ on: ['Name?'], send: 'John<enter>' }], { timeout: 10 });
+
+const result = await task;
+
+expect(result).toSucceed();
+expect(result).toHaveStdout('Hello, John!');
 ```
 
----
-
-#### Exec matchers
+### Matchers
 
 The package installs these Vitest/Chai matchers when imported:
 
-| Matcher | Assertion |
-|---|---|
-| `toFail()` / `toSucceed()` | A `Result` is failed or successful |
-| `toExitWith(code)` | An `ExecResult` has the given exit code (`number` or `null`) |
-| `toHaveStdout(expected)` / `toHaveStderr(expected)` | Output contains a string or matches a regular expression |
+#### Exec matchers
+
+| Matcher                  | Assertion                                                    |
+| ------------------------ | ------------------------------------------------------------ |
+| `toExitWith(code)`       | An `ExecResult` has the given exit code (`number` or `null`) |
+| `toHaveStderr(expected)` | `stderr` contains a string or matches a regular expression   |
+| `toHaveStdout(expected)` | `stdout` contains a string or matches a regular expression   |
+
+#### Result matchers
+
+| Matcher       | Assertion                |
+| ------------- | ------------------------ |
+| `toFail()`    | A `Result` has failed    |
+| `toSucceed()` | A `Result` is successful |
 
 ### Mocks
 
-#### mocks.memfs.fs
+#### memfs
 
-A drop-in replacement for Node's standard `fs` module, backed entirely by memory. Use it when you need manual control over the virtual filesystem.
-
-#### mocks.stdin
-
-Creates a readable stdin stream from a string or an array of strings. The tokens `<up>`, `<down>`, `<enter>`, and `<escape>` are encoded as terminal key sequences.
+`memfs` is a drop-in replacement for Node's standard `fs` module, backed entirely by memory. Use it when you need manual control over the virtual filesystem. The `vol` export from `memfs` is also available for directly managing the virtual volume.
 
 Contributions
 -------------

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][keepachangelog], and this project adheres to [Semantic Versioning][semver].
 
+[Unreleased]
+------------
+
+### Breaking
+
+- mock utilities have been renamed/moved
+
+### Added
+
+- add the `respondToInteractiveProcess` function
+- expose the `expandKeyTokens` function
+
 [v0.2.0] | 2026-11-21
 ---------------------
 

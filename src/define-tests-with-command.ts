@@ -5,12 +5,12 @@ import { isArray, isString } from '@zokugun/is-it-type';
 import { isCI } from '@zokugun/cli-utils';
 
 import { defineTestsWithExec } from './define-tests-with-exec.js';
-import { mocks } from './index.js';
+import { createStdinStream } from './stdio/create-stdin-stream.js';
 
 export async function defineTestsWithCommand<O extends Partial<CmdOptions> = {}>(command: Command<O>, name: string | null | undefined, commandOptions: Partial<CmdOptions> = {}, cliOptions: CliOptions = {}): Promise<void> {
 	await defineTestsWithExec(async (manifest, root) => {
 		const args: string[] = [];
-		const stdin = mocks.stdin(manifest.input);
+		const stdin = createStdinStream(manifest.input);
 
 		if(isString(name)) {
 			args.push(name);

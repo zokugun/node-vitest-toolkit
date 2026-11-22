@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { vi } from 'vitest';
 
-import { fs } from './mocks/memfs.js';
+import { memfs } from './memfs.js';
 
 const DEBUG = process.env.DEBUG === '1' || process.env.DEBUG === 'true' || process.env.DEBUG === 'on' || process.env.DEBUG === 'vol';
 
@@ -10,11 +10,11 @@ export function mockForInMemoryFiles(workingDirectory: string = '/working'): voi
 
 	vi.doMock('node:fs', () => (
 		{
-			...fs,
-			default: fs,
+			...memfs,
+			default: memfs,
 		}
 	));
-	vi.doMock('node:fs/promises', () => ({ default: fs.promises }));
+	vi.doMock('node:fs/promises', () => ({ default: memfs.promises }));
 
 	vi.doMock('node:process', () => ({
 		default: {

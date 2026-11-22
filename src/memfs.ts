@@ -1,8 +1,8 @@
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import { fs as mfs } from 'memfs';
 import { fromCallback as u } from 'universalify';
 
-export const fs = {
+export const memfs = {
 	access: u(mfs.access),
 	chmod: u(mfs.chmod),
 	chown: u(mfs.chown),
