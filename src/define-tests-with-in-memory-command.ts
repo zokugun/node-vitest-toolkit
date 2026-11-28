@@ -97,7 +97,8 @@ export async function defineTestsWithInMemoryCommand<Manifest extends Record<str
 					exit: (code: number = 0) => {
 						$exitCode = code;
 					},
-					fatal: (message: string) => {
+					fatal: (message: string, code: number = 1) => {
+						$exitCode = code;
 						$exitOutput.push(message);
 
 						throw new Error(message);
@@ -165,7 +166,7 @@ export async function defineTestsWithInMemoryCommand<Manifest extends Record<str
 			};
 		});
 
-		const importedModule = await import(path);
+		const importedModule = await vi.importActual(path);
 
 		vi.doUnmock('node:fs');
 		vi.doUnmock('node:fs/promises');
