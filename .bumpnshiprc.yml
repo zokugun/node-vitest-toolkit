@@ -4,3 +4,8 @@ publish:
   tag:
     name: v{version}
     message: Release version {version}
+  whenComplete:
+    open: https://github.com/zokugun/node-vitest-toolkit/actions
+
+interactive:
+  commit: pause

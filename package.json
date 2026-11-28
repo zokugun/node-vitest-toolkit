@@ -21,12 +21,14 @@
 			"import": "./lib/esm/index.mjs"
 		}
 	},
+	"main": "lib/cjs/index.cjs",
 	"module": "lib/esm/index.mjs",
 	"scripts": {
 		"audit:fix": "npm audit fix --min-release-age=0",
 		"build": "npm run clean && npm run build:out",
 		"build:out": "tsc-leda generate",
 		"build:package": "tsc-leda update-package && npm run lint:package",
+		"changelog:unrelease": "bump-changelog unrelease",
 		"ci:lint": "zizmor .",
 		"ci:lint:fix": "zizmor . --fix=all",
 		"clean": "rimraf .src lib",
@@ -37,10 +39,11 @@
 		"lint:package": "fixpack || true",
 		"prepack": "npm run build",
 		"prepare": "husky; npm run lint:package",
-		"release": "bump-n-ship release --all --pause",
+		"release": "bump-n-ship release",
 		"update:artifacts": "artifact update",
 		"update:ci": "pinact run -min-age 7 -update",
 		"update:deps": "taze --all",
+		"version": "bump-changelog bump",
 		"watch:build": "tsc-watch -p src --onSuccess 'npm run build'",
 		"watch:src": "tsc-watch -p src"
 	},
@@ -58,7 +61,8 @@
 		"@commitlint/config-conventional": "20.5.3",
 		"@types/node": "20.19.43",
 		"@types/universalify": "1.0.3",
-		"@zokugun/bump-n-ship": "0.1.1",
+		"@zokugun/bump-changelog": "0.2.0",
+		"@zokugun/bump-n-ship": "0.3.0",
 		"@zokugun/eslint-config": "0.2.1",
 		"@zokugun/eslint-config-data": "0.2.1",
 		"@zokugun/eslint-config-glossary": "0.2.0",
