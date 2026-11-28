@@ -67,7 +67,6 @@ export async function defineTestsWithInMemoryFiles(action: (manifest: Record<str
 		if(isString(manifest.error)) {
 			const { error } = manifest;
 
-
 			vol.fromJSON(fromJSON);
 
 			await expect(action(manifest)).rejects.toThrow(error);

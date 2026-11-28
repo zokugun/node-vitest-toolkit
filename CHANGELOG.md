@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][keepachangelog], and this project adheres to [Semantic Versioning][semver].
 
+[Unreleased]
+------------
+
+### Added
+
+- add `defineTestsWithInMemoryCommand` function
+- add `toStartWith` matcher
+
 [v0.3.0] | 2026-11-22
 ---------------------
 

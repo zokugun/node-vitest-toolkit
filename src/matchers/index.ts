@@ -2,6 +2,7 @@ import { expect } from 'vitest';
 
 import { toExitWith, toHaveStderr, toHaveStdout } from './exec.js';
 import { toFail, toSucceed } from './result.js';
+import { toStartWith } from './text.js';
 
 let $installed = false;
 
@@ -18,5 +19,6 @@ export function extendMatchers(): void {
 		toHaveStdout,
 		toHaveStderr,
 		toSucceed,
+		toStartWith,
 	});
 }

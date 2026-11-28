@@ -117,6 +117,36 @@ function defineTestsWithFiles(
 ): Promise<void>;
 ```
 
+#### defineTestsWithInMemoryCommand
+
+Runs a named export from a module in a mocked in-memory environment for each YAML fixture. Use `configure` to provide command arguments and the responses for mocked command executions.
+
+```typescript
+function defineTestsWithInMemoryCommand<Manifest extends Record<string, unknown>>(
+  path: string,
+  name: string,
+  configure: (manifest: Manifest) => AsyncDResult<{
+    responses: { command: string; output: string }[][];
+    args: unknown[];
+  } | {
+    response: { command: string; output: string };
+    args: unknown[];
+  }>,
+  assertSuccess: (value: {
+    code: number;
+    commands: string[];
+    output: string;
+  }, manifest: Manifest) => MaybePromise<void>,
+  options?: FixtureOptions & {
+    assertFailure?: (error: unknown, manifest: Manifest) => MaybePromise<void>;
+  }
+): Promise<void>;
+```
+
+The mocked `node:fs`, `node:fs/promises`, `node:process`, and `@zokugun/cli-utils` modules use the in-memory working directory `/working`. Command responses are matched by command line or `*`. If the fixture has an `error` key, the test expects the command to fail; otherwise `assertSuccess` receives the exit code, executed commands, and collected output.
+
+Set `DEBUG=1` to print logged output and `DEBUG=vol` to inspect the in-memory volume around execution.
+
 #### defineTestsWithInMemoryFiles
 
 Generates Vitest tests using an in-memory filesystem. Each YAML fixture maps to one test case.
@@ -166,6 +196,33 @@ function defineTestsWithValue<Manifest extends Record<string, unknown>, Value>(
   action: (manifest: Manifest) => MaybePromise<Value>,
   assert: (value: Value, manifest: Manifest) => MaybePromise<void>,
   options?: FixtureOptions
+): Promise<void>;
+```
+
+#### defineRawTests
+
+Creates one Vitest test per YAML fixture with no built-in assertion logic. This is the low-level fixture loader used by the other test helpers.
+
+```typescript
+function defineRawTests<Manifest extends Record<string, unknown>>(
+  action: (manifest: Manifest) => MaybePromise<void>,
+  options?: FixtureOptions
+): Promise<void>;
+```
+
+#### defineRawTestWithFiles
+
+Loads input and expected output files for each YAML fixture into a temporary directory, then runs a callback. Input and output key handling follows the `input` and `output` options.
+
+```typescript
+function defineRawTestWithFiles(
+  action: (
+    manifest: Record<string, unknown>,
+    workingDirectory: string,
+    expectedFiles: Record<string, string | { error: string }>,
+    debug: boolean
+  ) => MaybePromise<void>,
+  options?: FileFixtureOptions
 ): Promise<void>;
 ```
 
@@ -290,11 +347,11 @@ The package installs these Vitest/Chai matchers when imported:
 
 #### Exec matchers
 
-| Matcher                  | Assertion                                                    |
-| ------------------------ | ------------------------------------------------------------ |
-| `toExitWith(code)`       | An `ExecResult` has the given exit code (`number` or `null`) |
-| `toHaveStderr(expected)` | `stderr` contains a string or matches a regular expression   |
-| `toHaveStdout(expected)` | `stdout` contains a string or matches a regular expression   |
+| Matcher                                    | Assertion                                                  |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| `toExitWith(expectedExitCode: number)`     | An `ExecResult` has the given exit code                    |
+| `toHaveStderr(expected: RegExp \| string)` | `stderr` contains a string or matches a regular expression |
+| `toHaveStdout(expected: RegExp \| string)` | `stdout` contains a string or matches a regular expression |
 
 #### Result matchers
 
@@ -302,6 +359,12 @@ The package installs these Vitest/Chai matchers when imported:
 | ------------- | ------------------------ |
 | `toFail()`    | A `Result` has failed    |
 | `toSucceed()` | A `Result` is successful |
+
+#### Text matchers
+
+| Matcher                         | Assertion                       |
+| ------------------------------- | ------------------------------- |
+| `toStartWith(expected: string)` | A string starts with the prefix |
 
 ### Mocks
 

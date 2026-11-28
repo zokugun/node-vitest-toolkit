@@ -5,7 +5,7 @@ import { isBoolean, isNumber, isRecord, isString } from '@zokugun/is-it-type';
 
 import { isResult } from '#/utils/isResult.js';
 
-export function toExitWith(received: unknown, expectedExitCode: number | null): MatcherResult {
+export function toExitWith(received: unknown, expectedExitCode: number): MatcherResult {
 	const result = assertExecResult(received, 'toExitWith');
 	const exitCode = result.value?.exitCode ?? result.error?.exitCode;
 

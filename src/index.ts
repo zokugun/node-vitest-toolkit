@@ -9,9 +9,12 @@ export { vol } from 'memfs';
 export * as YAML from 'yaml';
 
 export { defineGroupedTests } from './define-grouped-tests.js';
+export { defineRawTests } from './raw/define-raw-tests.js'
+export { defineRawTestWithFiles } from './raw/define-raw-tests-with-file.js'
 export { defineTestsWithCommand } from './define-tests-with-command.js';
 export { defineTestsWithExec } from './define-tests-with-exec.js';
 export { defineTestsWithFiles } from './define-tests-with-files.js';
+export { defineTestsWithInMemoryCommand } from './define-tests-with-in-memory-command.js';
 export { defineTestsWithInMemoryFiles } from './define-tests-with-in-memory-files.js';
 export { defineTestsWithResult } from './define-tests-with-result.js';
 export { defineTestsWithValue } from './define-tests-with-value.js';
@@ -32,6 +35,7 @@ declare global {
 			toSucceed(): Assertion;
 			toHaveStdout(expected: string | RegExp): Assertion;
 			toHaveStderr(expected: string | RegExp): Assertion;
+			toStartWith(expected: string): Assertion;
 		}
 	}
 }
