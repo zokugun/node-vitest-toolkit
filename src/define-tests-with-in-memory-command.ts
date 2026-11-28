@@ -195,7 +195,11 @@ export async function defineTestsWithInMemoryCommand<Manifest extends Record<str
 			}
 
 			try {
-				await importedModule[name](...args);
+				const fn = importedModule[name];
+
+				expect(fn).toBeTypeOf('function');
+
+				await (fn as Function)(...args);
 
 				result = ok({
 					code: $exitCode!,
